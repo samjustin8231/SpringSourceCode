@@ -97,6 +97,7 @@ public class ByteArrayResource extends AbstractResource {
 	 */
 	@Override
 	public InputStream getInputStream() throws IOException {
+		// 从 ByteArray 创建 InputStream
 		return new ByteArrayInputStream(this.byteArray);
 	}
 

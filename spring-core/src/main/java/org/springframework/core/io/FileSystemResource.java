@@ -182,6 +182,7 @@ public class FileSystemResource extends AbstractResource implements WritableReso
 	 */
 	@Override
 	public InputStream getInputStream() throws IOException {
+		// 从文件路径加载 input stream
 		try {
 			return Files.newInputStream(this.filePath);
 		}

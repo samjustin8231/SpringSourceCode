@@ -167,6 +167,8 @@ public class ClassPathResource extends AbstractFileResolvingResource {
 	@Override
 	public InputStream getInputStream() throws IOException {
 		InputStream is;
+
+		// 从 class 或 classLoader 中获取 inputStream
 		if (this.clazz != null) {
 			is = this.clazz.getResourceAsStream(this.path);
 		}

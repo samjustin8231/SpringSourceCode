@@ -16,13 +16,13 @@
 
 package org.springframework.beans.propertyeditors;
 
-import java.beans.PropertyEditorSupport;
-import java.io.IOException;
-
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceEditor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import java.beans.PropertyEditorSupport;
+import java.io.IOException;
 
 /**
  * One-way PropertyEditor which can convert from a text String to a
@@ -35,12 +35,12 @@ import org.springframework.util.Assert;
  * <p>Note that such streams usually do not get closed by Spring itself!
  *
  * @author Juergen Hoeller
- * @since 1.0.1
  * @see java.io.InputStream
  * @see org.springframework.core.io.ResourceEditor
  * @see org.springframework.core.io.ResourceLoader
  * @see URLEditor
  * @see FileEditor
+ * @since 1.0.1
  */
 public class InputStreamEditor extends PropertyEditorSupport {
 
@@ -56,6 +56,7 @@ public class InputStreamEditor extends PropertyEditorSupport {
 
 	/**
 	 * Create a new InputStreamEditor, using the given ResourceEditor underneath.
+	 *
 	 * @param resourceEditor the ResourceEditor to use
 	 */
 	public InputStreamEditor(ResourceEditor resourceEditor) {
@@ -66,12 +67,12 @@ public class InputStreamEditor extends PropertyEditorSupport {
 
 	@Override
 	public void setAsText(String text) throws IllegalArgumentException {
+		// 将 String 转成 InputStream
 		this.resourceEditor.setAsText(text);
 		Resource resource = (Resource) this.resourceEditor.getValue();
 		try {
 			setValue(resource != null ? resource.getInputStream() : null);
-		}
-		catch (IOException ex) {
+		} catch (IOException ex) {
 			throw new IllegalArgumentException("Failed to retrieve InputStream for " + resource, ex);
 		}
 	}

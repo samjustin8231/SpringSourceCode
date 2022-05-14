@@ -927,8 +927,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		Assert.hasText(beanName, "Bean name must not be empty");
 		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
 
+		// 如果 BeanDefinition 是 AbstractBeanDefinition 的实例
 		if (beanDefinition instanceof AbstractBeanDefinition) {
 			try {
+				// 校验 BeanDefinition 中的 methodOverrides 属性
 				((AbstractBeanDefinition) beanDefinition).validate();
 			}
 			catch (BeanDefinitionValidationException ex) {
@@ -937,8 +939,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
+		// 已经存在 beanName 的情况
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
 		if (existingDefinition != null) {
+			// 如果设置了不允许覆盖，则报错
 			if (!isAllowBeanDefinitionOverriding()) {
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
 			}
@@ -966,6 +970,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
+		// beanName 不存在的情况
 		else {
 			if (hasBeanCreationStarted()) {
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
@@ -980,14 +985,19 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 			else {
 				// Still in startup registration phase
+				// 将 beanDefinition 加入到 beanDefinitionMap
 				this.beanDefinitionMap.put(beanName, beanDefinition);
+				// 将 beanName 加入到 beanDefinitionNames
 				this.beanDefinitionNames.add(beanName);
 				removeManualSingletonName(beanName);
 			}
 			this.frozenBeanDefinitionNames = null;
 		}
 
+		// 如果当前已经存在 beanDefinition
+		// 或者已经存在单例 bean 对象
 		if (existingDefinition != null || containsSingleton(beanName)) {
+			// 重新调整 beanName 的缓存
 			resetBeanDefinition(beanName);
 		}
 		else if (isConfigurationFrozen()) {
@@ -1025,6 +1035,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	}
 
 	/**
+	 * 重新调整 beanName 的缓存
+	 *
 	 * Reset all bean definition caches for the given bean,
 	 * including the caches of beans that are derived from it.
 	 * <p>Called after an existing bean definition has been replaced or removed,

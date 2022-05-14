@@ -95,6 +95,7 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 	 * @param beanClassLoader the factory's bean class loader
 	 */
 	public StandardBeanExpressionResolver(@Nullable ClassLoader beanClassLoader) {
+		// SPEL(spring express 语言)，如 #{xx}
 		this.expressionParser = new SpelExpressionParser(new SpelParserConfiguration(null, beanClassLoader));
 	}
 

@@ -98,6 +98,7 @@ public class InputStreamResource extends AbstractResource {
 					"do not use InputStreamResource if a stream needs to be read multiple times");
 		}
 		this.read = true;
+		// InputStreamResource 本身就有 inputStream
 		return this.inputStream;
 	}
 
