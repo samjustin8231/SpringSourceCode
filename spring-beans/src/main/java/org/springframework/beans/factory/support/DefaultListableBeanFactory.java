@@ -892,6 +892,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
+
+					// 核心: get bean
 					getBean(beanName);
 				}
 			}
@@ -899,7 +901,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Trigger post-initialization callback for all applicable beans...
 		for (String beanName : beanNames) {
+
+			// 获取单例 bean
 			Object singletonInstance = getSingleton(beanName);
+
+			// SmartInitializingSingleton
 			if (singletonInstance instanceof SmartInitializingSingleton) {
 				final SmartInitializingSingleton smartSingleton = (SmartInitializingSingleton) singletonInstance;
 				if (System.getSecurityManager() != null) {

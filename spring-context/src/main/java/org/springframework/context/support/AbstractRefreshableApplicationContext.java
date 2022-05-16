@@ -26,6 +26,7 @@ import org.springframework.lang.Nullable;
 import java.io.IOException;
 
 /**
+ * 抽象的 可刷新的 application 容器上下文
  * Base class for {@link org.springframework.context.ApplicationContext}
  * implementations which are supposed to support multiple calls to {@link #refresh()},
  * creating a new internal bean factory instance every time.
@@ -139,11 +140,14 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 		try {
 			// 创建 BeanFactory
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
+
 			beanFactory.setSerializationId(getId());
 			// 定制化 BeanFactory
 			customizeBeanFactory(beanFactory);
-			// 解析并加载 bean
+
+			// 解析并加载 beanDefinitions
 			loadBeanDefinitions(beanFactory);
+
 			synchronized (this.beanFactoryMonitor) {
 				this.beanFactory = beanFactory;
 			}

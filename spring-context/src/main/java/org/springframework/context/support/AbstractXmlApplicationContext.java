@@ -27,6 +27,7 @@ import org.springframework.lang.Nullable;
 import java.io.IOException;
 
 /**
+ * 抽象的 xml application 容器上下文
  * Convenient base class for {@link org.springframework.context.ApplicationContext}
  * implementations, drawing configuration from XML documents containing bean definitions
  * understood by an {@link org.springframework.beans.factory.xml.XmlBeanDefinitionReader}.

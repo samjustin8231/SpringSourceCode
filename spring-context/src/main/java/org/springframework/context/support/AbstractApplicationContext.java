@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * 抽象的 application 容器上下文
  * Abstract implementation of the {@link org.springframework.context.ApplicationContext}
  * interface. Doesn't mandate the type of storage used for configuration; simply
  * implements common context functionality. Uses the Template Method design pattern,
@@ -533,6 +534,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
+
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
 			// 初始化上下文信息
@@ -577,8 +579,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// 初始化各种监听器
 				registerListeners();
 
+
 				// Instantiate all remaining (non-lazy-init) singletons.
-				// 预先初始化哪些非延迟加载的单例 bean
+				// 预先初始化那些非延迟加载的单例 bean
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
@@ -921,6 +924,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
+		// 实例化单例 beans
 		beanFactory.preInstantiateSingletons();
 	}
 
