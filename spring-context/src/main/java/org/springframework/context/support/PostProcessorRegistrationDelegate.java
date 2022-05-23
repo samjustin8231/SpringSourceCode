@@ -64,6 +64,7 @@ final class PostProcessorRegistrationDelegate {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 			// 存放普通的 BeanFactoryPostProcessor
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
+
 			// 存放 BeanDefinitionRegistryPostProcessor 类型的 BeanFactory
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
