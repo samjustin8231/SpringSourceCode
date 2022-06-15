@@ -541,7 +541,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			// 初始化初级容器 BeanFactory, 并解析 xml 文件
+			// 初始化初级容器 BeanFactory, 并解析 xml 文件，ConfigurableListableBeanFactory 实际是 DefaultListableBeanFactory
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -556,10 +556,22 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Invoke factory processors registered as beans in the context.
 				// 执行 BeanFactory 级别的后置处理器
+				/**
+				 * 注册自定义的 BeanFacotryPostProcessor 和自定义的BeanFactoryPostProcessor到BeanFactory中,
+				 * 部分已经由BeanDefinition实例化为bean
+				 *
+				 * 这里会解析@Connfiguration @Import @ComponetSacn @ImportSource 等注解
+				 * 会完成包的扫描等工作，将扫描到的类转成BeanDefinition
+				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
 				// 注册 bean 的后置处理器
+				/**
+				 * 注册Spring定义的BeanPostProcessor和自定义的BeanPostProcessor到BeanFactory中
+				 * 部分自定义的BeanPostProcessor再这里已经由BeanDefinition实例化为bean
+				 *
+				 */
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
@@ -582,6 +594,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Instantiate all remaining (non-lazy-init) singletons.
 				// 预先初始化那些非延迟加载的单例 bean
+				/**
+				 * 普通的非延迟加载的bean 在这里被beanFactory由BeanDefinition实例化为bean
+				 * 这里进行Aspecjt织入、循环依赖处理等操作，最终实例化 bean
+				 */
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
@@ -752,6 +768,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+		/**
+		 * 注意这里的getBeanFactoryPostProcessors()方法。
+		 * 如果是程序员自定义的BeanFactoryPostProcessor并且是通过context.addBeanFactoryPostProcessor() 方式添加的，那么这里会获取到。
+		 * 而如果是通过@Bean、@Component、@Import 方式这里是获取不到的，因为这几种方式并不会将BeanFactoryPostProcessor放入到AbstractApplicationContext中的beanFactoryPostProcessors 中，而是直接包装成BeanDefinition直接放入到BeanFactory中的beanDefinitionMap
+		 */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime

@@ -19,6 +19,7 @@ package org.springframework.beans.factory.support;
 import org.springframework.beans.factory.config.BeanDefinition;
 
 /**
+ * bean name 生成器
  * Strategy interface for generating bean names for bean definitions.
  *
  * @author Juergen Hoeller
@@ -27,10 +28,12 @@ import org.springframework.beans.factory.config.BeanDefinition;
 public interface BeanNameGenerator {
 
 	/**
+	 * 生成 beanName
 	 * Generate a bean name for the given bean definition.
+	 *
 	 * @param definition the bean definition to generate a name for
-	 * @param registry the bean definition registry that the given definition
-	 * is supposed to be registered with
+	 * @param registry   the bean definition registry that the given definition
+	 *                   is supposed to be registered with
 	 * @return the generated bean name
 	 */
 	String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry);

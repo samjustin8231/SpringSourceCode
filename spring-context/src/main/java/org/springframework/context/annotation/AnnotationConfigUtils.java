@@ -138,6 +138,19 @@ public abstract class AnnotationConfigUtils {
 	}
 
 	/**
+	 * 将Spring内部相关的后置处理器 注册 进BeanFactory中
+	 * 一个有5个，这里重要关注 ConfigurationClassPostProcessor 这个后置处理器
+	 *  BeanFactoryPostProcessor
+	 *            ConfigurationClassPostProcessor
+	 *            EventListenerMethodProcessor
+	 *
+	 *  BeanPostProcessor
+	 *            AutowiredAnnotationBeanPostProcessor
+	 *            CommonAnnotationBeanPostProcessor
+	 *            PersistenceAnnotationBeanPostProcessor
+	 *
+	 *  DefaultEventListenerFactory
+	 *
 	 * Register all relevant annotation post processors in the given registry.
 	 * @param registry the registry to operate on
 	 * @param source the configuration source element (already extracted)
@@ -148,30 +161,54 @@ public abstract class AnnotationConfigUtils {
 	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
 
+		/**
+		 * 判断获取BeanFactory是 什么类型并返回对应的beanFactory,但是AnnotatedConfigApplicationContext的父类默认使用的就是DefaultListableBeanFactory
+		 * 所以返回的beanFactory是DefaultListableBeanFactory
+		 */
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		if (beanFactory != null) {
+
+			// 如果 beanFactory使用的依赖比较器 不是 AnnotationAwareOrderComparator 类型，就给这个beanFactory传入一个AnnotationAwareOrderComparator
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
+
+			// 如果beanFactory使用的AutowireCandidateResolver 不是ContextAnnotationAutowireCandidateResolver，就这个beanFactory 传入一个ContextAnnotationAutowireCandidateResolver
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}
 		}
 
+		/**
+		 * 定义一个LinkedHashSet用于存放BeanDefinitionHolder,默认8个空间
+		 * BeanDefinitionHolder 是BeanDefinition 的一层封装
+		 * BeanDefinition
+		 * java一切皆对象。
+		 * 一个类   在jvm中是用Class对象来表示的。
+		 * 		  在Spring中就是通过BeanDefionition来表示被Spring容器管理的类
+		 */
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 
+		// 这里重要关注 ConfigurationClassPostProcessor 这个后置处理器
+		/*
+		* 判断容器中是否已经存在org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+		* 如果不存在，则 使用ConfigurationClassProcessor创建一个RootBeanDefinition。
+		*
+	    */
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		// AutowiredAnnotationBeanPostProcessor
 		if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		// CommonAnnotationBeanPostProcessor
 		// Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
 		if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);

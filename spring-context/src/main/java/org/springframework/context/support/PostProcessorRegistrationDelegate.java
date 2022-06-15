@@ -59,7 +59,8 @@ final class PostProcessorRegistrationDelegate {
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
 		Set<String> processedBeans = new HashSet<>();
 
-		// BeanFactory 是 BeanDefinitionRegistry 的实现类
+		// 第一个阶段：执行所有的BeanDefinitionRegistryPostProcessor
+		// 如果 BeanFactory 是 BeanDefinitionRegistry 的实现类
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 			// 存放普通的 BeanFactoryPostProcessor
@@ -89,11 +90,30 @@ final class PostProcessorRegistrationDelegate {
 
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
 			// 获取类型为 BeanDefinitionRegistryPostProcessor 的beans
+			/**
+			 *   从beanFacttory中拿出所有BeanDefinitionRegistryPostProcessor的子类
+			 *      除了包含Spring内置的ConfigurationClassPostProcessor外，
+			 *
+			 *      但是如果仅仅是@Component方式，这里是不会被查询到的！
+			 */
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
-				// 同时实现了 PriorityOrdered 的
+				/**
+				 * 根据后置处理器的名字判断，这个后置处理器是否是PriorityOrdered的子类
+				 * 而Spring内置的ConfigurationClassPostProcessor实现了PriorityOrdered接口
+				 */
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+
+					/**
+					 *
+					 * beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class)
+					 * 因为要执行后置处理器中的方法，所以必须得到它的实例才能执行其中的方法。
+					 * 所以在这里实例化了一个ConfigurationClassPostProcessor的单例，并放入到DefaultListableBeanFactory的earlySingletonObjects集合中
+					 *
+					 * currentRegistryProcessors.add()
+					 * 将实例化的后置处理器实例放入 待执行的集合中
+					 */
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 					processedBeans.add(ppName);
 				}
@@ -101,12 +121,27 @@ final class PostProcessorRegistrationDelegate {
 			// 根据 PriorityOrdered 排序
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			registryProcessors.addAll(currentRegistryProcessors);
+
+			/**
+			 * 待执行的BeanDefinitionRegistryPostProcessor的实例依次执行 扩展方法
+			 *
+			 * 因为ConfigurationClassPostProcessor 会 对DefaultListableBeanFactory中的beanDefinitionMap进行遍历，
+			 * 并处理@Configuration @Component @ComponentScan @Import 注解
+			 *
+			 * 这个方法会扫描@ComponetScan 指定包下的类，这些类会封装成BeanDefinition放进beanFactory的Map中
+			 * 也就是在这个时候自定义的@Bean @Component @Import方式的BeanFactiryPostProcessor和BeanPostProcessor 被放入beanFactory中
+			 *
+			 */
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 			// 执行完后，清空，准备下一轮
 			currentRegistryProcessors.clear();
 
 			// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.
 			// 用来存放既实现了 BeanDefinitionRegistryPostProcessor 又实现了 Ordered 的(每处理完一批，阶段性清空一批)
+			/**
+			 * 自定义的 BeanDefinitionRegistryPostProcessor的实现类
+			 * 如果自定义的类同时实现了org.springframework.core.Ordered接口则会立即执行自定义的BeanDefinitionRegistryPostProcessor的实现类
+			 */
 			postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
 				if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) {
@@ -121,6 +156,9 @@ final class PostProcessorRegistrationDelegate {
 			currentRegistryProcessors.clear();
 
 			// Finally, invoke all other BeanDefinitionRegistryPostProcessors until no further ones appear.
+			/**
+			 * 执行没有实现org.springframework.core.Ordered接口的自定义BeanDefinitionRegistryPostProcessor
+			 */
 			boolean reiterate = true;
 			while (reiterate) {
 				reiterate = false;
@@ -146,12 +184,17 @@ final class PostProcessorRegistrationDelegate {
 		}
 		// BeanFactory 不是 BeanDefinitionRegistry 的实现类
 		else {
+			// 第二个阶段：执行所有的BeanFactoryPostProcessor
 			// Invoke factory processors registered with the context instance.
 			invokeBeanFactoryPostProcessors(beanFactoryPostProcessors, beanFactory);
 		}
 
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let the bean factory post-processors apply to them!
+		/**
+		 * 使用@Componet注解和register()方式进来的，都在这里被获取到
+		 * 因为上面已经进行了扫描，将所有需要交给Spring管理的类 转换成了BeanDefinition对象
+		 */
 		String[] postProcessorNames =
 				beanFactory.getBeanNamesForType(BeanFactoryPostProcessor.class, true, false);
 

@@ -53,8 +53,14 @@ import org.springframework.util.Assert;
  */
 public class AnnotationConfigApplicationContext extends GenericApplicationContext implements AnnotationConfigRegistry {
 
+	/**
+	 * 注解 BeanDefinition 读取器
+	 */
 	private final AnnotatedBeanDefinitionReader reader;
 
+	/**
+	 * classpath BeanDefinition 扫描器
+	 */
 	private final ClassPathBeanDefinitionScanner scanner;
 
 
@@ -63,6 +69,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
+
+		// 创建 AnnotatedBeanDefinitionReader 和 ClassPathBeanDefinitionScanner
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
@@ -72,7 +80,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * @param beanFactory the DefaultListableBeanFactory instance to use for this context
 	 */
 	public AnnotationConfigApplicationContext(DefaultListableBeanFactory beanFactory) {
+		//调用了无参构造函数,要先加载父类的无参构造函数
 		super(beanFactory);
+
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}

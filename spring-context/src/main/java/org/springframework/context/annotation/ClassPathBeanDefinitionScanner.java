@@ -108,6 +108,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * @see #setEnvironment
 	 */
 	public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters) {
+		// 根据registry 判断使用哪种 Environment
 		this(registry, useDefaultFilters, getOrCreateEnvironment(registry));
 	}
 
